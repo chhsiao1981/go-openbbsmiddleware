@@ -30,32 +30,20 @@ type GetArticleDetailResult struct {
 }
 
 func GetArticleDetail(remoteAddr string, userID bbs.UUserID, params interface{}, path interface{}, c *gin.Context) (result interface{}, statusCode int, err error) {
-	_, ok := path.(*GetArticleDetailPath)
+	thePath, ok := path.(*GetArticleDetailPath)
 	if !ok {
 		return nil, 400, ErrInvalidParams
 	}
 
-	result = &GetArticleDetailResult{
-		ArticleSummary: &types.ArticleSummary{
-			BBoardID:   bbs.BBoardID("1_test1"),
-			ArticleID:  bbs.ArticleID("1_123124"),
-			IsDeleted:  false,
-			Filename:   "M.1234567890.A.324",
-			CreateTime: types.Time8(1234567890),
-			MTime:      types.Time8(1234567889),
-			Recommend:  8,
-			Owner:      "okcool",
-			Date:       "12/04",
-			Title:      "[問題]然後呢？～",
-			Class:      "問題",
-			Money:      3,
-			Filemode:   0,
-			URL:        "http://localhost/bbs/test1/M.1234567890.A.324.html",
-			Read:       false,
-		},
-
-		Brdname: "test1",
+	result, err = tryGetArticleContentInfo(userID, thePath.BBoardID, thePath.ArticleID)
+	if err != nil {
+		return nil, 400, err
 	}
 
 	return result, 200, nil
+}
+
+func tryGetArticleContentInfo(userID bbs.UUserID, bboardID bbs.BBoardID, articleID bbs.ArticleID) (result *GetArticleDetailResult, err error) {
+
+	return nil, nil
 }

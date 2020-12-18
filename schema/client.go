@@ -1,6 +1,13 @@
 package schema
 
-import "github.com/Ptt-official-app/go-openbbsmiddleware/types"
+import (
+	"github.com/Ptt-official-app/go-openbbsmiddleware/db"
+	"github.com/Ptt-official-app/go-openbbsmiddleware/types"
+)
+
+var (
+	Client_c *db.Collection
+)
 
 type Client struct {
 	//可信任的 app-client

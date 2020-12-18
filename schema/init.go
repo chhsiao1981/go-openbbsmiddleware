@@ -13,11 +13,23 @@ func Init() (err error) {
 		return err
 	}
 
-	Client_c = client.Collection("client")
-	User_c = client.Collection("user")
 	AccessToken_c = client.Collection("access_token")
+	Article_c = client.Collection("article")
+	Board_c = client.Collection("board")
+	BoardBanuser_c = client.Collection("board_banuser")
+	BoardChildren_c = client.Collection("board_children")
+	BoardFriend_c = client.Collection("board_friend")
+	Client_c = client.Collection("client")
+	Comment_c = client.Collection("comment")
+
+	User_c = client.Collection("user")
+	UserAloha_c = client.Collection("user_aloha")
+	UserFriend_c = client.Collection("user_friend")
+
 	UserReadArticle_c = client.Collection("user_read_article")
 	UserReadBoard_c = client.Collection("user_read_board")
+
+	UserReject_c = client.Collection("user_reject")
 
 	return nil
 }

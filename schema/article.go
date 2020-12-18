@@ -1,10 +1,15 @@
 package schema
 
 import (
+	"github.com/Ptt-official-app/go-openbbsmiddleware/db"
 	"github.com/Ptt-official-app/go-openbbsmiddleware/types"
 	"github.com/Ptt-official-app/go-pttbbs/bbs"
 	"github.com/Ptt-official-app/go-pttbbs/ptttype"
 	"github.com/Ptt-official-app/go-pttbbs/types/proto"
+)
+
+var (
+	Article_c *db.Collection
 )
 
 type Article struct {
@@ -31,4 +36,13 @@ type Article struct {
 	BBS     string        `bson:"bbs"`
 
 	UpdateNanoTS types.NanoTS `bson:"update_nano_ts"`
+}
+
+type ArticleQuery struct {
+	BBoardID  bbs.BBoardID  `bson:"bid"`
+	ArticleID bbs.ArticleID `bson:"aid"`
+}
+
+type ArticleMTimeFields struct {
+	MTime bool `bson:"mtime_ts"`
 }

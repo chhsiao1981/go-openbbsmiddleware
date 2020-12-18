@@ -7,6 +7,7 @@ import (
 	"github.com/Ptt-official-app/go-openbbsmiddleware/types"
 	pttbbsapi "github.com/Ptt-official-app/go-pttbbs/api"
 	"github.com/Ptt-official-app/go-pttbbs/bbs"
+	pttbbstypes "github.com/Ptt-official-app/go-pttbbs/types"
 	"gopkg.in/square/go-jose.v2/jwt"
 )
 
@@ -45,4 +46,10 @@ func VerifyJwt(raw string) (userID bbs.UUserID, err error) {
 	}
 
 	return cl.UUserID, nil
+}
+
+func ToURL(bboardID bbs.BBoardID, articleID bbs.ArticleID) string {
+	filenameRaw := articleID.ToFilename()
+	filename := pttbbstypes.CstrToString(filenameRaw[:])
+	return types.URL_PREFIX + "/" + string(bboardID) + "/" + filename + ".html"
 }

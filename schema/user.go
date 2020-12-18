@@ -1,9 +1,14 @@
 package schema
 
 import (
+	"github.com/Ptt-official-app/go-openbbsmiddleware/db"
 	"github.com/Ptt-official-app/go-openbbsmiddleware/types"
 	"github.com/Ptt-official-app/go-pttbbs/bbs"
 	"github.com/Ptt-official-app/go-pttbbs/ptttype"
+)
+
+var (
+	User_c *db.Collection
 )
 
 type User struct {
