@@ -138,8 +138,6 @@ func updateCommentsCore(comments []*Comment, updateNanoTS types.NanoTS) (err err
 			BBoardID:  each.BBoardID,
 			ArticleID: each.ArticleID,
 			CommentID: each.CommentID,
-
-			IsDeleted: bson.M{"$exists": false},
 		}
 
 		theList[idx] = &db.UpdatePair{

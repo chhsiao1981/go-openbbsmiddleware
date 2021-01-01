@@ -15,7 +15,10 @@ const (
 	ARTICLE_LOCK_TS_DURATION                  = time.Duration(ARTICLE_LOCK_TS) * time.Second
 	ARTICLE_LOCK_NANO_TS                      = types.NanoTS(ARTICLE_LOCK_TS) * types.TS_TO_NANO_TS
 	GET_ARTICLE_CONTENT_INFO_TOO_SOON_NANO_TS = ARTICLE_LOCK_NANO_TS + types.NanoTS(1)*types.TS_TO_NANO_TS //10 + 1 seconds.
+)
 
+const (
+	MIN_LEN_PASSWD = 7
 )
 
 var (

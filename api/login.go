@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/Ptt-official-app/go-openbbsmiddleware/schema"
+	"github.com/Ptt-official-app/go-openbbsmiddleware/types"
 	"github.com/Ptt-official-app/go-openbbsmiddleware/utils"
 	pttbbsapi "github.com/Ptt-official-app/go-pttbbs/api"
 	"github.com/Ptt-official-app/go-pttbbs/bbs"
@@ -23,9 +24,10 @@ func NewLoginParams() *LoginParams {
 }
 
 type LoginResult struct {
-	UserID      bbs.UUserID `json:"user_id"`
-	AccessToken string      `json:"access_token"`
-	TokenType   string      `json:"token_type"`
+	UserID             bbs.UUserID `json:"user_id"`
+	AccessToken        string      `json:"access_token"`
+	TokenType          string      `json:"token_type"`
+	IsPasswdVulnerable bool        `json:"passwd_vulnerable"`
 }
 
 func LoginWrapper(c *gin.Context) {
@@ -63,23 +65,38 @@ func Login(remoteAddr string, params interface{}, c *gin.Context) (result interf
 	}
 
 	//update db
-	accessToken, err := serializeAccessTokenAndUpdateDB(result_b.UserID, result_b.Jwt)
+	updateNanoTS := types.NowNanoTS()
+	accessToken, err := serializeAccessTokenAndUpdateDB(result_b.UserID, result_b.Jwt, updateNanoTS)
 	if err != nil {
 		return nil, 500, err
 	}
 
+	err = serializeUserLoginAndUpdateDB(result_b.UserID, updateNanoTS)
+	if err != nil {
+		return nil, 500, err
+	}
+
+	isPasswdVulnerable := checkIsPasswdVulnerable(theParams.Password)
+	if isPasswdVulnerable {
+		err = serializeUserIsPasswdVulnerableAddUpdateDB(result_b.UserID, updateNanoTS)
+		if err != nil {
+			return nil, 500, err
+		}
+	}
+
 	//result
-	result = NewLoginResult(accessToken)
+	result = NewLoginResult(accessToken, isPasswdVulnerable)
 
 	setTokenToCookie(c, accessToken.AccessToken)
 
 	return result, 200, nil
 }
 
-func NewLoginResult(accessToken_db *schema.AccessToken) *LoginResult {
+func NewLoginResult(accessToken_db *schema.AccessToken, isPasswdVulnerable bool) *LoginResult {
 	return &LoginResult{
-		UserID:      accessToken_db.UserID,
-		AccessToken: accessToken_db.AccessToken,
-		TokenType:   "bearer",
+		UserID:             accessToken_db.UserID,
+		AccessToken:        accessToken_db.AccessToken,
+		TokenType:          "bearer",
+		IsPasswdVulnerable: isPasswdVulnerable,
 	}
 }

@@ -57,8 +57,7 @@ func UpdateBoardSummaries(boardSummaries []*BoardSummary, updateNanoTS types.Nan
 	theList := make([]*db.UpdatePair, len(boardSummaries))
 	for idx, each := range boardSummaries {
 		query := &BoardQuery{
-			BBoardID:  each.BBoardID,
-			IsDeleted: bson.M{"$exists": false},
+			BBoardID: each.BBoardID,
 		}
 
 		theList[idx] = &db.UpdatePair{

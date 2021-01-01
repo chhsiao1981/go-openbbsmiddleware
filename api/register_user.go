@@ -59,6 +59,10 @@ func RegisterUser(remoteAddr string, params interface{}, c *gin.Context) (result
 		return nil, 400, ErrInvalidParams
 	}
 
+	if checkIsPasswdVulnerable(theParams.Password) {
+		return nil, 400, ErrVulnerablePasswd
+	}
+
 	clientInfo := getClientInfo(client)
 
 	//backend register
@@ -83,7 +87,8 @@ func RegisterUser(remoteAddr string, params interface{}, c *gin.Context) (result
 	}
 
 	//update db
-	accessToken, err := serializeAccessTokenAndUpdateDB(result_b.UserID, result_b.Jwt)
+	updateNanoTS := types.NowNanoTS()
+	accessToken, err := serializeAccessTokenAndUpdateDB(result_b.UserID, result_b.Jwt, updateNanoTS)
 	if err != nil {
 		return nil, 500, err
 	}

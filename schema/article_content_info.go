@@ -48,7 +48,6 @@ func UpdateArticleContentInfo(bboardID bbs.BBoardID, articleID bbs.ArticleID, co
 	query := bson.M{
 		ARTICLE_BBOARD_ID_b:  bboardID,
 		ARTICLE_ARTICLE_ID_b: articleID,
-		ARTICLE_IS_DELETED_b: bson.M{"$exists": false},
 	}
 
 	r, err := Article_c.CreateOnly(query, contentInfo)
