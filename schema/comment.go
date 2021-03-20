@@ -37,8 +37,9 @@ type Comment struct {
 	IP           string            `bson:"ip"`
 	Host         string            `bson:"host"` //ip 的中文呈現, 外國則為國家.
 	MD5          string            `bson:"md5"`
-
-	IsFirstComments bool `bson:"is_first_comments"`
+	Big5         []byte            `bson:"big5"`
+	IsInferred   bool              `bson:"is_inferred"`
+	TheDate      string            `bson:"the_date"`
 
 	EditNanoTS types.NanoTS `bson:"edit_nano_ts"` //for reply.
 
@@ -349,25 +350,6 @@ func (c *Comment) CleanReply() {
 	}
 
 	c.Content = c.Content[idxFirstGoodContent:idxLastGoodContent]
-
-	newContent := make([][]*types.Rune, 0, len(c.Content))
-	for _, each := range c.Content {
-		if !isEditReplyPerLine(each) {
-			newContent = append(newContent, each)
-		}
-	}
-
-	c.Content = newContent
-}
-
-func isEditReplyPerLine(line []*types.Rune) bool {
-	if len(line) == 0 { //we don't want to remove nil line this time
-		return false
-	}
-
-	zerothStr := line[0].Utf8
-
-	return strings.HasPrefix(zerothStr, "※ 編輯:")
 }
 
 func cleanReplyPerLine(origLine []*types.Rune) (newLine []*types.Rune) {
@@ -377,12 +359,6 @@ func cleanReplyPerLine(origLine []*types.Rune) (newLine []*types.Rune) {
 		count += len(each.Utf8)
 	}
 	if count == 0 {
-		return nil
-	}
-
-	zerothStr := origLine[0].Utf8 // with count, len(origLine) must >= 1
-
-	if strings.HasPrefix(zerothStr, "※ 編輯:") {
 		return nil
 	}
 
