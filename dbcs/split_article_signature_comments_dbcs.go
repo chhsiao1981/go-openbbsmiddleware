@@ -4,32 +4,55 @@ import (
 	"bytes"
 )
 
+//splitArticleSignatureCommentsDBCS
+//
+//given content, try to split as article / bbs-signature / comments
+//
+//在 edit 之後, 整個 content 有可能會被擾亂.
+//我們只能盡可能的根據得到的資訊來決定是否是屬於 signature 或是 comments.
+//
+//rules:
+//1. 整個 content 只會被分成 3 種可能: article / bbs-signature / comments
+//2. bbs-signature 辨識方式: 最後 1 個 ※  發信站:
+//3. comments 辨識方式: 符合顏色的推/噓/→
+//4. 如果有 bbs-signature, comments 一定是在 bbs-signature 之後.
+//5. 一旦出現 comments, 之後的 content 都會是 comments 或 reply.
+//
+//implementation:
+//1. 嘗試拿到 signature 的 idx.
+//2. 如果有 signature idx: 嘗試將 signature 之後的分出 comments, return article / signature, comments
+//3. 否則: 嘗試將 content 分出 comments, return article / nil, comments
 func splitArticleSignatureCommentsDBCS(content []byte) (articleDBCS []byte, signatureDBCS []byte, comments []byte) {
 
 	//get content with signature
 	idxes := tryGetSimpleSignatureIdxes(content)
 
+	//start with largest idx
 	reverseList(idxes)
 
 	for _, idx := range idxes {
-		splitCommentIdx, isValid := isValidSimpleSignaure(content, idx)
-		if isValid {
-			if splitCommentIdx == -1 {
-				return content[:idx], content[idx:], nil
-			}
-			commentIdx := idx + splitCommentIdx
-			return content[:idx], content[idx:commentIdx], content[commentIdx:]
+		isValid := isValidSimpleSignaure(content, idx)
+		if !isValid {
+			continue
 		}
+
+		//comments are after signature
+		splitCommentIdx := matchComment(content[idx:])
+		if splitCommentIdx == -1 {
+			return content[:idx], content[idx:], nil
+		}
+
+		commentIdx := idx + splitCommentIdx
+		return content[:idx], content[idx:commentIdx], content[commentIdx:]
 	}
 
 	// get content with comments, but no signatures.
 	idx := matchComment(content)
-	if idx != -1 {
-		return content[:idx], nil, content[idx:]
+	if idx == -1 {
+		return content, nil, nil
 	}
 
-	// only content
-	return content, nil, nil
+	return content[:idx], nil, content[idx:]
 }
 
 func tryGetSimpleSignatureIdxes(content []byte) []int {
@@ -51,18 +74,10 @@ func tryGetSimpleSignatureIdxes(content []byte) []int {
 	return idxes
 }
 
-func isValidSimpleSignaure(content []byte, idx int) (splitIdx int, isValid bool) {
-
+func isValidSimpleSignaure(content []byte, idx int) (isValid bool) {
 	p_content := content[idx:]
 
-	isValid = isSimpleSignatureWithFrom(p_content)
-	if !isValid {
-		return -1, false
-	}
-
-	splitIdx = matchComment(p_content)
-
-	return splitIdx, true
+	return isSimpleSignatureWithFrom(p_content)
 }
 
 func isSimpleSignatureWithFrom(p_content []byte) bool {

@@ -41,27 +41,30 @@ func ParseFirstComments(
 	return firstComments, firstCommentsMD5, firstCommentsLastTime, theRestComments
 }
 
+//splitFirstComments
+//
+//match the first N_FIRST_COMMENTS comments
 func splitFirstComments(commentsDBCS []byte) (firstCommentsDBCS []byte, theRestComments []byte) {
 	p_commentsDBCS := commentsDBCS
 
 	nComments := 0
 	nBytes := 0
-	for idx := bytes.Index(p_commentsDBCS, []byte{'\n'}); len(p_commentsDBCS) > 0 && idx != -1 && nComments < N_FIRST_COMMENTS; {
+	for idxNewLine := bytes.Index(p_commentsDBCS, []byte{'\n'}); len(p_commentsDBCS) > 0 && idxNewLine != -1 && nComments < N_FIRST_COMMENTS; {
 		nComments++
 
-		nBytes += idx
-		p_commentsDBCS = p_commentsDBCS[idx:] //starting from '\n'
+		nBytes += idxNewLine
+		p_commentsDBCS = p_commentsDBCS[idxNewLine:] //starting from '\n'
 
 		nextCommentIdx := matchComment(p_commentsDBCS)
-		if nextCommentIdx != -1 {
-
-			nBytes += nextCommentIdx
-			p_commentsDBCS = p_commentsDBCS[nextCommentIdx:] //starting from beginning of the next comment.
-
-			idx = bytes.Index(p_commentsDBCS, []byte{'\n'})
-		} else {
-			idx = -1
+		if nextCommentIdx == -1 {
+			idxNewLine = -1
+			continue
 		}
+
+		nBytes += nextCommentIdx
+		p_commentsDBCS = p_commentsDBCS[nextCommentIdx:] //starting from beginning of the next comment.
+
+		idxNewLine = bytes.Index(p_commentsDBCS, []byte{'\n'})
 	}
 
 	if nComments < N_FIRST_COMMENTS { //no more '\n', but not enough comments yet, add the last comment.
