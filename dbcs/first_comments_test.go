@@ -2,6 +2,7 @@ package dbcs
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/Ptt-official-app/go-openbbsmiddleware/schema"
@@ -26,6 +27,7 @@ func TestParseFirstComments(t *testing.T) {
 	tests := []struct {
 		name                     string
 		args                     args
+		updateNanoTS             types.NanoTS
 		expectedFirstComments    []*schema.Comment
 		expectedFirstCommentsMD5 string
 		expectedTheRestComments  []byte
@@ -42,12 +44,30 @@ func TestParseFirstComments(t *testing.T) {
 				articleMTime:      types.NanoTS(1607802720000000000),
 				commentsDBCS:      testComment0,
 			},
+			updateNanoTS:             types.NanoTS(1607802730000000000),
 			expectedFirstComments:    testFullFirstComments0,
 			expectedFirstCommentsMD5: "lUNLzf4Qpeos8HBS676eWg",
 		},
+		{
+			name: "0_" + testFilename0 + ":repeat",
+			args: args{
+				bboardID:          "test",
+				articleID:         "test",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1607202237000000000),
+				articleMTime:      types.NanoTS(1607802720000000000),
+				commentsDBCS:      testComment0,
+			},
+			updateNanoTS:             types.NanoTS(1607802740000000000),
+			expectedFirstCommentsMD5: "lUNLzf4Qpeos8HBS676eWg",
+		},
 	}
+
+	var wg sync.WaitGroup
 	for _, tt := range tests {
+		wg.Add(1)
 		t.Run(tt.name, func(t *testing.T) {
+			defer wg.Done()
 			gotFirstComments, gotFirstCommentsMD5, gotTheRestComments, err := ParseFirstComments(tt.args.bboardID, tt.args.articleID, tt.args.ownerID, tt.args.articleCreateTime, tt.args.articleMTime, tt.args.commentsDBCS, tt.args.origFirstCommentsMD5)
 
 			if (err != nil) != tt.wantErr {
@@ -63,7 +83,9 @@ func TestParseFirstComments(t *testing.T) {
 			if !reflect.DeepEqual(gotTheRestComments, tt.expectedTheRestComments) {
 				t.Errorf("ParseFirstComments() gotTheRestComments = %v, want %v", gotTheRestComments, tt.expectedTheRestComments)
 			}
+			schema.UpdateComments(gotFirstComments, tt.updateNanoTS)
 		})
+		wg.Wait()
 	}
 }
 

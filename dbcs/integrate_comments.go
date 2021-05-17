@@ -26,13 +26,15 @@ func IntegrateComments(boardID bbs.BBoardID, articleID bbs.ArticleID, comments [
 		nNewComments += len(each.NewComments)
 	}
 
-	newComments = make([]*schema.Comment, 0, nNewComments)
-	for idx, each := range edBlocks {
-		if idx == nBlock {
-			break
-		}
-		for _, each2 := range each.NewComments {
-			newComments = append(newComments, each2.NewComment)
+	if nNewComments != 0 {
+		newComments = make([]*schema.Comment, 0, nNewComments)
+		for idx, each := range edBlocks {
+			if idx == nBlock {
+				break
+			}
+			for _, each2 := range each.NewComments {
+				newComments = append(newComments, each2.NewComment)
+			}
 		}
 	}
 
@@ -56,13 +58,15 @@ func IntegrateComments(boardID bbs.BBoardID, articleID bbs.ArticleID, comments [
 		nToDeleteComments += len(each.OrigComments)
 	}
 
-	toDeleteComments = make([]*schema.CommentMD5, 0, nToDeleteComments)
-	for idx, each := range edBlocks {
-		if idx == nBlock {
-			break
-		}
-		for _, each2 := range each.OrigComments {
-			toDeleteComments = append(toDeleteComments, each2.OrigComment)
+	if nToDeleteComments != 0 {
+		toDeleteComments = make([]*schema.CommentMD5, 0, nToDeleteComments)
+		for idx, each := range edBlocks {
+			if idx == nBlock {
+				break
+			}
+			for _, each2 := range each.OrigComments {
+				toDeleteComments = append(toDeleteComments, each2.OrigComment)
+			}
 		}
 	}
 
