@@ -61,6 +61,34 @@ func TestParseFirstComments(t *testing.T) {
 			updateNanoTS:             types.NanoTS(1607802740000000000),
 			expectedFirstCommentsMD5: "lUNLzf4Qpeos8HBS676eWg",
 		},
+		{
+			name: "0_" + testFilename0,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test1",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1607202237000000000),
+				articleMTime:      types.NanoTS(1607802690000000000),
+				commentsDBCS:      testComment0,
+			},
+			updateNanoTS:             types.NanoTS(1607802730000000000),
+			expectedFirstComments:    testFullFirstComments01,
+			expectedFirstCommentsMD5: "lUNLzf4Qpeos8HBS676eWg",
+		},
+		{
+			name: "0_" + testFilename0 + ":2021",
+			args: args{
+				bboardID:          "test",
+				articleID:         "test2",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1607202237000000000),
+				articleMTime:      types.NanoTS(1639338720000000000),
+				commentsDBCS:      testComment0,
+			},
+			updateNanoTS:             types.NanoTS(1607802740000000000),
+			expectedFirstComments:    testFullFirstComments02,
+			expectedFirstCommentsMD5: "lUNLzf4Qpeos8HBS676eWg",
+		},
 	}
 
 	var wg sync.WaitGroup
