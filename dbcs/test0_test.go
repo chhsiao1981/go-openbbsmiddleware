@@ -190,7 +190,7 @@ func initTest0() {
 	testFullFirstComments01 = []*schema.Comment{
 		{
 			BBoardID:   bbs.BBoardID("test"),
-			ArticleID:  bbs.ArticleID("test1"),
+			ArticleID:  bbs.ArticleID("test01"),
 			CommentID:  types.CommentID("FlAQBy5eFAA:t24G1aV7UjVPoUv-6_T93A"),
 			TheType:    types.COMMENT_TYPE_COMMENT,
 			Owner:      bbs.UUserID("SYSOP"),
@@ -216,7 +216,7 @@ func initTest0() {
 	testFullFirstComments02 = []*schema.Comment{
 		{
 			BBoardID:   bbs.BBoardID("test"),
-			ArticleID:  bbs.ArticleID("test2"),
+			ArticleID:  bbs.ArticleID("test02"),
 			CommentID:  types.CommentID("FsAZ01_daAA:t24G1aV7UjVPoUv-6_T93A"),
 			TheType:    types.COMMENT_TYPE_COMMENT,
 			Owner:      bbs.UUserID("SYSOP"),

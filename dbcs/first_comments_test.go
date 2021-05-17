@@ -65,7 +65,7 @@ func TestParseFirstComments(t *testing.T) {
 			name: "0_" + testFilename0,
 			args: args{
 				bboardID:          "test",
-				articleID:         "test1",
+				articleID:         "test01",
 				ownerID:           "testOwner",
 				articleCreateTime: types.NanoTS(1607202237000000000),
 				articleMTime:      types.NanoTS(1607802690000000000),
@@ -79,7 +79,7 @@ func TestParseFirstComments(t *testing.T) {
 			name: "0_" + testFilename0 + ":2021",
 			args: args{
 				bboardID:          "test",
-				articleID:         "test2",
+				articleID:         "test02",
 				ownerID:           "testOwner",
 				articleCreateTime: types.NanoTS(1607202237000000000),
 				articleMTime:      types.NanoTS(1639338720000000000),
@@ -88,6 +88,60 @@ func TestParseFirstComments(t *testing.T) {
 			updateNanoTS:             types.NanoTS(1607802740000000000),
 			expectedFirstComments:    testFullFirstComments02,
 			expectedFirstCommentsMD5: "lUNLzf4Qpeos8HBS676eWg",
+		},
+		{
+			name: "1_" + testFilename1,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test1",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1607250193000000000),
+				articleMTime:      types.NanoTS(1607802780000000000),
+				commentsDBCS:      testComment1,
+			},
+			updateNanoTS:             types.NanoTS(1607802790000000000),
+			expectedFirstComments:    testFullFirstComments1,
+			expectedFirstCommentsMD5: "WVuJu6yziL3Xw0LCXoIXVw",
+		},
+		{
+			name: "2_" + testFilename2,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test2",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1607983972000000000),
+				articleMTime:      types.NanoTS(1607983972000000000),
+				commentsDBCS:      testComment2,
+			},
+			updateNanoTS:          types.NanoTS(1607802790000000000),
+			expectedFirstComments: testFullFirstComments2,
+		},
+		{
+			name: "3_" + testFilename3,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test3",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1608433078000000000),
+				articleMTime:      types.NanoTS(1608433078000000000),
+				commentsDBCS:      testComment3,
+			},
+			updateNanoTS:          types.NanoTS(1608433078000000000),
+			expectedFirstComments: testFullFirstComments3,
+		},
+		{
+			name: "4_" + testFilename4,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test4",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1608388504000000000),
+				articleMTime:      types.NanoTS(1608388624000000000),
+				commentsDBCS:      testComment4,
+			},
+			updateNanoTS:             types.NanoTS(1608435524000000000),
+			expectedFirstComments:    testFullFirstComments4,
+			expectedFirstCommentsMD5: "3fjMk__1yvzpuEgq8jfdmg",
 		},
 	}
 
@@ -111,7 +165,11 @@ func TestParseFirstComments(t *testing.T) {
 			if !reflect.DeepEqual(gotTheRestComments, tt.expectedTheRestComments) {
 				t.Errorf("ParseFirstComments() gotTheRestComments = %v, want %v", gotTheRestComments, tt.expectedTheRestComments)
 			}
-			schema.UpdateComments(gotFirstComments, tt.updateNanoTS)
+
+			if len(gotFirstComments) == 0 {
+				return
+			}
+			_ = schema.UpdateComments(gotFirstComments, tt.updateNanoTS)
 		})
 		wg.Wait()
 	}
