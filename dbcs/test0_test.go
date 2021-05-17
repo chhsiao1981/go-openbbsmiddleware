@@ -166,7 +166,8 @@ func initTest0() {
 			CommentID:  types.CommentID("EX64L4hMaAA:t24G1aV7UjVPoUv-6_T93A"),
 			TheType:    types.COMMENT_TYPE_COMMENT,
 			Owner:      bbs.UUserID("SYSOP"),
-			CreateTime: types.NanoTS(1260647460000000000),
+			CreateTime: types.NanoTS(1607802660000000000),
+			SortTime:   types.NanoTS(1607802660000000000),
 			Content: [][]*types.Rune{
 				{
 					{

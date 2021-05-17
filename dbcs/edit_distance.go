@@ -298,17 +298,27 @@ func (meta *EDInfoMeta) ToEDBlock(edInfos []*EDInfo) (edBlock *EDBlock) {
 	return edBlock
 }
 
-func InferTimestamp(edBlocks []*EDBlock, isForwardOnly bool, isLastAlignEndNanoTS bool) {
+func InferTimestamp(edBlocks []*EDBlock, isForwardOnly bool, isLastAlignEndNanoTS bool) (nBlock int) {
 	if len(edBlocks) == 0 {
 		return
 	}
 
 	startNanoTS := edBlocks[0].StartNanoTS
 
+	nBlock = len(edBlocks)
 	for idx, each := range edBlocks {
 		isAlignEndNanoTS := isLastAlignEndNanoTS && (idx == len(edBlocks)-1)
+		lenBeforeComments := len(each.NewComments)
 		each.InferTimestamp(startNanoTS, isForwardOnly, isAlignEndNanoTS)
+		lenAfterComments := len(each.NewComments)
+		if lenAfterComments == 0 {
+			return idx
+		}
+		if lenAfterComments < lenBeforeComments {
+			return idx + 1
+		}
 	}
+	return nBlock
 }
 
 //InferTimestamp

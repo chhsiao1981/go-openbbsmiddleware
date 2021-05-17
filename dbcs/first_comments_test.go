@@ -3,7 +3,69 @@ package dbcs
 import (
 	"reflect"
 	"testing"
+
+	"github.com/Ptt-official-app/go-openbbsmiddleware/schema"
+	"github.com/Ptt-official-app/go-openbbsmiddleware/types"
+	"github.com/Ptt-official-app/go-pttbbs/bbs"
+	"github.com/Ptt-official-app/go-pttbbs/testutil"
 )
+
+func TestParseFirstComments(t *testing.T) {
+	setupTest()
+	defer teardownTest()
+
+	type args struct {
+		bboardID             bbs.BBoardID
+		articleID            bbs.ArticleID
+		ownerID              bbs.UUserID
+		articleCreateTime    types.NanoTS
+		articleMTime         types.NanoTS
+		commentsDBCS         []byte
+		origFirstCommentsMD5 string
+	}
+	tests := []struct {
+		name                     string
+		args                     args
+		expectedFirstComments    []*schema.Comment
+		expectedFirstCommentsMD5 string
+		expectedTheRestComments  []byte
+		wantErr                  bool
+	}{
+		// TODO: Add test cases.
+		{
+			name: "0_" + testFilename0,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1607202237000000000),
+				articleMTime:      types.NanoTS(1607802720000000000),
+				commentsDBCS:      testComment0,
+			},
+			expectedFirstComments:    testFullFirstComments0,
+			expectedFirstCommentsMD5: "lUNLzf4Qpeos8HBS676eWg",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotFirstComments, gotFirstCommentsMD5, gotTheRestComments, err := ParseFirstComments(tt.args.bboardID, tt.args.articleID, tt.args.ownerID, tt.args.articleCreateTime, tt.args.articleMTime, tt.args.commentsDBCS, tt.args.origFirstCommentsMD5)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseFirstComments: err: %v expected: %v", err, tt.wantErr)
+			}
+
+			testutil.TDeepEqual(t, "firstComments", gotFirstComments, tt.expectedFirstComments)
+
+			if gotFirstCommentsMD5 != tt.expectedFirstCommentsMD5 {
+				t.Errorf("ParseFirstComments() gotFirstCommentsMD5 = %v, want %v", gotFirstCommentsMD5, tt.expectedFirstCommentsMD5)
+			}
+
+			if !reflect.DeepEqual(gotTheRestComments, tt.expectedTheRestComments) {
+				t.Errorf("ParseFirstComments() gotTheRestComments = %v, want %v", gotTheRestComments, tt.expectedTheRestComments)
+			}
+		})
+	}
+}
 
 func Test_splitFirstComments(t *testing.T) {
 	setupTest()
