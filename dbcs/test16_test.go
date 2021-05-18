@@ -239,7 +239,6 @@ func initTest16() {
 		{ //0
 			TheType:    types.COMMENT_TYPE_REPLY,
 			Owner:      bbs.UUserID("mapinkie"),
-			CommentID:  types.CommentID("FfnDpSG1dAA:MlwwZY4bzjaIUZAotWmOPw"),
 			CreateTime: 1583511858000000000,
 			Content: [][]*types.Rune{
 				{
@@ -438,7 +437,6 @@ func initTest16() {
 		{ //10
 			TheType:    types.COMMENT_TYPE_REPLY,
 			Owner:      bbs.UUserID("mapinkie"),
-			CommentID:  "FfnD8m5zbAA:7tkvXPK6iHO5IzFBfJCOwA",
 			CreateTime: 1583512190000000000,
 			Content: [][]*types.Rune{
 				{

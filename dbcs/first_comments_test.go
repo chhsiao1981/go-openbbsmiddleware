@@ -143,6 +143,63 @@ func TestParseFirstComments(t *testing.T) {
 			expectedFirstComments:    testFullFirstComments4,
 			expectedFirstCommentsMD5: "3fjMk__1yvzpuEgq8jfdmg",
 		},
+		{
+			name: "5_" + testFilename5,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test5",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1048928980000000000),
+				articleMTime:      types.NanoTS(1048928980000000000),
+				commentsDBCS:      testComment5,
+			},
+			updateNanoTS:             types.NanoTS(1608435524000000000),
+			expectedFirstComments:    testFullFirstComments5,
+			expectedFirstCommentsMD5: "gQUbzCzxvt83giSwqT4odw",
+		},
+		{
+			name: "6_" + testFilename6,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test6",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1581529604000000000),
+				articleMTime:      types.NanoTS(1581628710000000000),
+				commentsDBCS:      testComment6,
+			},
+			updateNanoTS:             types.NanoTS(1608435524000000000),
+			expectedFirstComments:    testFullFirstComments6,
+			expectedFirstCommentsMD5: "rbq5acSoZFqWxpyORdI93Q",
+			expectedTheRestComments:  testTheRestCommentsDBCS6,
+		},
+		{
+			name: "7_" + testFilename7,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test7",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1049092184000000000),
+				articleMTime:      types.NanoTS(1049092244000000000),
+				commentsDBCS:      testComment7,
+			},
+			updateNanoTS:             types.NanoTS(1608435524000000000),
+			expectedFirstComments:    testFullFirstComments7,
+			expectedFirstCommentsMD5: "ohOkfXXoey16NGhqsEvWBg",
+		},
+		{
+			name: "8_" + testFilename8,
+			args: args{
+				bboardID:          "test",
+				articleID:         "test8",
+				ownerID:           "testOwner",
+				articleCreateTime: types.NanoTS(1419202243000000000),
+				articleMTime:      types.NanoTS(1419202834000000000),
+				commentsDBCS:      testComment8,
+			},
+			updateNanoTS:             types.NanoTS(1608435524000000000),
+			expectedFirstComments:    testFullFirstComments8,
+			expectedFirstCommentsMD5: "jYSd2b4ScDh1JXFhy4yUHw",
+		},
 	}
 
 	var wg sync.WaitGroup

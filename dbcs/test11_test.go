@@ -1580,7 +1580,6 @@ func initTest11() {
 		{ //18
 			BBoardID:   bbs.BBoardID("test"),
 			ArticleID:  bbs.ArticleID("test"),
-			CommentID:  types.CommentID("FlK5IlMqXAA:ARcE42l2555xJ93dwcK0YQ"),
 			TheType:    types.COMMENT_TYPE_REPLY,
 			Owner:      bbs.UUserID("cheinshin"),
 			CreateTime: types.NanoTS(1608551574000000000),
@@ -2105,7 +2104,6 @@ func initTest11() {
 		{ //42 (43)
 			BBoardID:   bbs.BBoardID("test"),
 			ArticleID:  bbs.ArticleID("test"),
-			CommentID:  types.CommentID("FlK5QCCPXAA:x2xXuH2bvsoQ_2wOzdcr6A"),
 			RefIDs:     []types.CommentID{"EYFhUw7dGAA:yBPgyUXJMLN6p6EYeODktQ"},
 			TheType:    types.COMMENT_TYPE_REPLY,
 			Owner:      bbs.UUserID("cheinshin"),
@@ -2191,7 +2189,6 @@ func initTest11() {
 		{ //46 (48)
 			BBoardID:   bbs.BBoardID("test"),
 			ArticleID:  bbs.ArticleID("test"),
-			CommentID:  types.CommentID("EYFhYQckcAA:qjTVjQQ7Vy7K3EJTNXro_w"),
 			TheType:    types.COMMENT_TYPE_RECOMMEND,
 			Owner:      bbs.UUserID("indium111"),
 			CreateTime: types.NanoTS(1261396440000000000),
@@ -2653,7 +2650,6 @@ func initTest11() {
 		{ //67 (69)
 			BBoardID:   bbs.BBoardID("test"),
 			ArticleID:  bbs.ArticleID("test"),
-			CommentID:  types.CommentID("AAAAAAAAAAA:VMu8YlVFJ4k06pYnUILy4w"),
 			RefIDs:     []types.CommentID{"EYFhmOhvlsA:cpqbGyLoF_jIyITF4bv-rQ"},
 			TheType:    types.COMMENT_TYPE_REPLY,
 			Owner:      bbs.UUserID("cheinshin"),

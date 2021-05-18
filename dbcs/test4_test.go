@@ -178,7 +178,7 @@ func initTest4() {
 		{
 			BBoardID:   bbs.BBoardID("test"),
 			ArticleID:  bbs.ArticleID("test4"),
-			CommentID:  types.CommentID("FlIk0bNSyAA:3dK46zmOe5zmna12AC1gnQ"),
+			CommentID:  types.CommentID("FlIk0qHNMkA:3dK46zmOe5zmna12AC1gnQ"),
 			TheType:    types.COMMENT_TYPE_COMMENT,
 			Owner:      bbs.UUserID("SYSOP"),
 			CreateTime: types.NanoTS(1608388500000000000),

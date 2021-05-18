@@ -359,32 +359,6 @@ func (ed *EDBlock) InferTimestamp(startNanoTS types.NanoTS, isForwardOnly bool, 
 	ed.BackwardInferTS(nextIdx, isLastAlignEndNanoTS)
 }
 
-func (ed *EDBlock) MapDeletedMessages() {
-	origComments := ed.OrigComments
-	lenOrigComments := len(origComments)
-	origIdx := 0
-	for _, each := range ed.NewComments {
-		newComment := each.NewComment
-		if newComment.TheType != types.COMMENT_TYPE_DELETED {
-			continue
-		}
-
-		for ; origIdx < lenOrigComments && origComments[origIdx].OrigComment.TheType > types.COMMENT_TYPE_BASIC; origIdx++ {
-		}
-
-		if origIdx >= lenOrigComments {
-			break
-		}
-
-		origComment := origComments[origIdx].OrigComment
-		origIdx++
-
-		newComment.SortTime = origComment.SortTime + DELETE_STEP_NANO_TS
-		newComment.RefIDs = []types.CommentID{origComment.CommentID}
-		newComment.SetCreateTime(newComment.SortTime)
-	}
-}
-
 func (ed *EDBlock) AlignEndNanoTS() {
 	newComments := ed.NewComments
 	if len(newComments) == 0 {
@@ -410,8 +384,8 @@ func (ed *EDBlock) AlignEndNanoTS() {
 		createTime = lastComment.CreateTime
 	}
 
-	lastComment.SortTime = sortTime
-	lastComment.SetCreateTime(createTime)
+	lastComment.CreateTime = createTime
+	lastComment.SetSortTime(sortTime)
 }
 
 //ForwardInferTS
@@ -435,14 +409,14 @@ func (ed *EDBlock) ForwardInferTS(startNanoTS types.NanoTS) (nextIdx int) {
 		if newComment.TheType == types.COMMENT_TYPE_REPLY {
 			theNanoTS := currentNanoTS + REPLY_STEP_NANO_TS
 			if newComment.CreateTime == 0 {
-				newComment.SetCreateTime(theNanoTS)
+				newComment.CreateTime = theNanoTS
 			}
 
 			if theNanoTS >= ed.EndNanoTS {
 				theNanoTS = forwardExceedingEndNanoTS(idx, len(newComments), currentNanoTS, ed.EndNanoTS)
 			}
 
-			newComment.SortTime = theNanoTS
+			newComment.SetSortTime(theNanoTS)
 			currentNanoTS = newComment.SortTime
 			continue
 		}
@@ -465,10 +439,10 @@ func (ed *EDBlock) ForwardInferTS(startNanoTS types.NanoTS) (nextIdx int) {
 			break
 		}
 
-		newComment.SortTime = sortNanoTS
+		newComment.SetSortTime(sortNanoTS)
 		logrus.Infof("ForwardInferTS: to check CreateTime: newComment.CreateTime: %v createNanoTS: %v", newComment.CreateTime, createNanoTS)
 		if newComment.CreateTime == 0 {
-			newComment.SetCreateTime(createNanoTS)
+			newComment.CreateTime = createNanoTS
 			logrus.Infof("ForwardInferTS: after set CreateTime: newComment.CreateTime: %v createNanoTS: %v", newComment.CreateTime, createNanoTS)
 		}
 
@@ -523,9 +497,9 @@ func (ed *EDBlock) BackwardInferTS(nextIdx int, isAlignEndNanoTS bool) {
 			sortNanoTS = backwardExceedingStartNanoTS(idx, len(newComments), currentNanoTS, startNanoTS)
 		}
 
-		newComment.SortTime = sortNanoTS
+		newComment.SetSortTime(sortNanoTS)
 		if newComment.CreateTime == 0 {
-			newComment.SetCreateTime(createNanoTS)
+			newComment.CreateTime = createNanoTS
 		}
 
 		currentNanoTS = newComment.SortTime
@@ -541,7 +515,7 @@ func (ed *EDBlock) BackwardInferTS(nextIdx int, isAlignEndNanoTS bool) {
 		}
 		theNanoTS := currentNanoTS + REPLY_STEP_NANO_TS
 		if newComment.CreateTime == 0 {
-			newComment.SetCreateTime(theNanoTS)
+			newComment.CreateTime = theNanoTS
 		}
 
 		endNanoTS := ed.EndNanoTS
@@ -552,7 +526,7 @@ func (ed *EDBlock) BackwardInferTS(nextIdx int, isAlignEndNanoTS bool) {
 		if theNanoTS >= endNanoTS {
 			theNanoTS = forwardExceedingEndNanoTS(idx, idx+1, currentNanoTS, endNanoTS)
 		}
-		newComment.SortTime = theNanoTS
+		newComment.SetSortTime(theNanoTS)
 		currentNanoTS = newComment.SortTime
 	}
 
