@@ -24,6 +24,14 @@ const (
 	ED_OP_ADD     EDOp = 3
 )
 
+type INFER_TIMESTAMP_TYPE uint8
+
+const (
+	INFER_TIMESTAMP_INVALID INFER_TIMESTAMP_TYPE = 0
+	INFER_TIMESTAMP_YMDHM   INFER_TIMESTAMP_TYPE = 1
+	INFER_TIMESTAMP_YMD     INFER_TIMESTAMP_TYPE = 2
+)
+
 type EDInfo struct {
 	Op          EDOp
 	NewComment  *schema.Comment //SAME/DELETE: origComments, ADD: newComments
@@ -371,10 +379,14 @@ func (ed *EDBlock) AlignEndNanoTS() {
 	}
 
 	year := ed.EndNanoTS.ToTime().Year()
-	createTime := inferTSWithYear(lastComment.TheDate, year)
+	createTime, inferType := inferTSWithYear(lastComment.TheDate, year)
 
 	theDiff := ed.EndNanoTS - createTime
-	if theDiff > -COMMENT_DIFF_ALIGN_END_NANO_TS && theDiff < COMMENT_DIFF_ALIGN_END_NANO_TS {
+	inferDiff := COMMENT_DIFF_ALIGN_END_NANO_TS
+	if inferType == INFER_TIMESTAMP_YMD {
+		inferDiff = COMMENT_DIFF2_ALIGN_END_NANO_TS
+	}
+	if theDiff > -COMMENT_DIFF_ALIGN_END_NANO_TS && theDiff < inferDiff {
 		createTime = ed.EndNanoTS
 	}
 
@@ -545,15 +557,20 @@ func backwardExceedingStartNanoTS(idx int, total int, currentNanoTS types.NanoTS
 
 //forwardInferTS
 func forwardInferTSWithYear(theDate string, year int, startNanoTS types.NanoTS) (sortNanoTS types.NanoTS, createNanoTS types.NanoTS) {
-	sortNanoTS = inferTSWithYear(theDate, year)
+	sortNanoTS, inferType := inferTSWithYear(theDate, year)
 	createNanoTS = sortNanoTS
 
 	logrus.Infof("forwardInferTSWithYear: start: theDate: %v startNanoTS: %v nanoTS: %v", theDate, startNanoTS, sortNanoTS)
 	if sortNanoTS <= startNanoTS {
-		if startNanoTS-sortNanoTS < COMMENT_STEP_DIFF_NANO_TS {
+		inferDiff := COMMENT_STEP_DIFF_NANO_TS
+		if inferType == INFER_TIMESTAMP_YMD {
+			inferDiff = COMMENT_STEP_DIFF2_NANO_TS
+		}
+
+		if startNanoTS-sortNanoTS < inferDiff {
 			sortNanoTS = startNanoTS + COMMENT_STEP_NANO_TS
 		} else {
-			sortNanoTS = inferTSWithYear(theDate, year+1)
+			sortNanoTS, _ = inferTSWithYear(theDate, year+1)
 			createNanoTS = sortNanoTS
 		}
 	}
@@ -571,15 +588,19 @@ func forwardInferTSWithYear(theDate string, year int, startNanoTS types.NanoTS) 
 
 //backwardInferTS
 func backwardInferTSWithYear(theDate string, year int, endNanoTS types.NanoTS) (sortNanoTS types.NanoTS, createNanoTS types.NanoTS) {
-	sortNanoTS = inferTSWithYear(theDate, year)
+	sortNanoTS, inferType := inferTSWithYear(theDate, year)
 	createNanoTS = sortNanoTS
 	sortNanoTS += COMMENT_BACKWARD_OFFSET_NANO_TS
 
 	if sortNanoTS >= endNanoTS {
-		if sortNanoTS-endNanoTS < COMMENT_STEP_DIFF_NANO_TS {
+		inferDiff := COMMENT_STEP_DIFF_NANO_TS
+		if inferType == INFER_TIMESTAMP_YMD {
+			inferDiff = COMMENT_STEP_DIFF2_NANO_TS
+		}
+		if sortNanoTS-endNanoTS < inferDiff {
 			sortNanoTS = endNanoTS - COMMENT_STEP_NANO_TS
 		} else {
-			sortNanoTS = inferTSWithYear(theDate, year-1)
+			sortNanoTS, _ = inferTSWithYear(theDate, year-1)
 			createNanoTS = sortNanoTS
 			sortNanoTS += COMMENT_BACKWARD_OFFSET_NANO_TS
 		}
@@ -600,22 +621,22 @@ func backwardInferTSWithYear(theDate string, year int, endNanoTS types.NanoTS) (
 //
 //theDate: possibly MM/DD or MM/DD hh:mm
 //alg: 1. add as YYYY/MM/DD or YYYY/MM/DD hh:mm
-func inferTSWithYear(theDate string, year int) (nanoTS types.NanoTS) {
+func inferTSWithYear(theDate string, year int) (nanoTS types.NanoTS, theType INFER_TIMESTAMP_TYPE) {
 	theDateWithYear := strconv.Itoa(year) + "/" + theDate
 
 	//1. try YYYY/MM/DD hh:mm
 	theTime, err := types.DateMinStrToTime(theDateWithYear)
 	logrus.Infof("inferTSWithYear: after 1st: theDateWithYear: %v theTime: %v e: %v", theDateWithYear, theTime, err)
 	if err == nil {
-		return types.TimeToNanoTS(theTime)
+		return types.TimeToNanoTS(theTime), INFER_TIMESTAMP_YMDHM
 	}
 
 	//2. try YYYY/MM/DD
-	theTime, err = types.DateMinStrToTime(theDateWithYear)
+	theTime, err = types.DateStrToTime(theDateWithYear)
 	logrus.Infof("inferTSWithYear: after 2nd: theDateWithYear: %v theTime: %v e: %v", theDateWithYear, theTime, err)
 	if err == nil {
-		return types.TimeToNanoTS(theTime)
+		return types.TimeToNanoTS(theTime), INFER_TIMESTAMP_YMD
 	}
 
-	return 0
+	return 0, INFER_TIMESTAMP_INVALID
 }
