@@ -1,5 +1,3 @@
-Date: 2021-06-30
-
 # 程式架構說明
 
 * `api/` api 主要的 functions.

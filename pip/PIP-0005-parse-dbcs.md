@@ -1,5 +1,3 @@
-Date: 2021-06-30
-
 # Parse DBCS
 
 在 c-pttbbs 裡. 使用的 encoding 是 Big5 + [ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code). \

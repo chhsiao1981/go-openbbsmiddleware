@@ -1,5 +1,3 @@
-Date: 2021-06-30
-
 # 使用 MongoDB
 
 MongoDB 有著以下的 features:

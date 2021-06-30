@@ -1,5 +1,3 @@
-Date: 2021-06-30
-
 # PIP
 
 Ptt Improvement Proprosal (PIP) 是 Ptt 新架構的各種文件.

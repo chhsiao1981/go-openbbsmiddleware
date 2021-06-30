@@ -38,6 +38,7 @@ Parse comments 分成[兩個階段](https://github.com/Ptt-official-app/go-openb
 
 
 ## [Integrate comments](https://github.com/Ptt-official-app/go-openbbsmiddleware/blob/main/dbcs/integrate_comments.go)
+
 1. 拿到所有的既有的 comments 的 MD5
 2. 根據 edit-distance 找到相同 MD5 的 comments 和相應的 chunkts
 3. 對於每個 edit-distance chunk, inference 出相對應的 timestamp:

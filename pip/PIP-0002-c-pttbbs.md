@@ -1,5 +1,3 @@
-Date: 2021-06-30
-
 # c-pttbbs
 
 c-pttbbs 大致上是每個 user 的 connection 是獨立 fork 出來的 process 與 user 做 interaction. \

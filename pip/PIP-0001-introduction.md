@@ -1,5 +1,3 @@
-Date: 2021-06-30
-
 # Introduction
 
 Ptt ([Web 版](https://term.ptt.cc/), [Publicly Accessible 版](https://www.ptt.cc/bbs/index.html)) \
