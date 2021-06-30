@@ -2,6 +2,11 @@
 
 c-pttbbs 的文章包含著本文 (content), 站方簽名檔 (signature), 推文區 (comments).
 
+parse 文章被認為是 computationally intensive 的 task. 中介底層只提供 raw-file-data 給中介應用層. 由中介應用層負責做文章的 parsing.
+
+
+## Split 文章的 Algorithm
+
 在轉錄/Re 時會再次增加站方簽名檔.
 
 推文區目前已知的種類包含著:
