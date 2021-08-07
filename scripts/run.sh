@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ini_filename=02-config.run.ini
+ini_filename=docker/02-config.run.ini
 package=github.com/Ptt-official-app/go-openbbsmiddleware/types
 commit=`git rev-parse --short HEAD`
 version=`git describe --tags`
