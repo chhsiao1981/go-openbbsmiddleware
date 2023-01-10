@@ -130,47 +130,65 @@ func isValidArticleSummaries(articleSummaries_db []*schema.ArticleSummary) ([]*s
 	return articleSummaries_db, nil
 }
 
-func checkReadUserArticles(userID bbs.UUserID, theList []*schema.ArticleSummary) (userReadArticleMap map[bbs.ArticleID]bool, err error) {
-	queryArticleIDs := make([]bbs.ArticleID, 0, len(theList))
-	checkArticleIDMap := make(map[bbs.ArticleID]int)
+func checkReadUserArticles(userID bbs.UUserID, theList []*schema.ArticleSummary) (userReadArticleMap map[bbs.BBoardID]map[bbs.ArticleID]bool, err error) {
+	articleIDMap := make(map[bbs.BBoardID][]bbs.ArticleID)
+	idxMap := make(map[bbs.BBoardID]map[bbs.ArticleID]int)
 	for idx, each := range theList {
-		checkArticleIDMap[each.ArticleID] = idx
-		queryArticleIDs = append(queryArticleIDs, each.ArticleID)
-	}
+		_, ok := articleIDMap[each.BBoardID]
+		if !ok {
+			articleIDMap[each.BBoardID] = make([]bbs.ArticleID, 0, len(theList))
+			idxMap[each.BBoardID] = make(map[bbs.ArticleID]int)
+		}
 
-	dbResults, err := schema.FindUserReadArticlesByArticleIDs(userID, queryArticleIDs)
-	if err != nil {
-		return nil, err
+		articleIDMap[each.BBoardID] = append(articleIDMap[each.BBoardID], each.ArticleID)
+		idxMap[each.BBoardID][each.ArticleID] = idx
 	}
 
 	// setup read in the list
 	// no need to update db, because we don't read the article yet.
 	// the Read flag is set based on the existing db.UpdateNanoTS
-	userReadArticleMap = make(map[bbs.ArticleID]bool)
-	for _, each := range dbResults {
-		eachArticleID := each.ArticleID
-		eachReadNanoTS := each.UpdateNanoTS
-
-		listIdx, ok := checkArticleIDMap[eachArticleID]
-		if !ok {
-			continue
+	userReadArticleMap = make(map[bbs.BBoardID]map[bbs.ArticleID]bool)
+	for boardID, articleIDs := range articleIDMap {
+		dbResults, err := schema.FindUserReadArticlesByArticleIDs(userID, boardID, articleIDs)
+		if err != nil {
+			return nil, err
 		}
 
-		eachInTheList := theList[listIdx]
-		eachPostNanoTS := eachInTheList.CreateTime
-		isRead := eachReadNanoTS > eachPostNanoTS
-		userReadArticleMap[eachArticleID] = isRead
+		eachUserReadArticleMap := make(map[bbs.ArticleID]bool)
+
+		for _, each := range dbResults {
+
+			eachIdxMap, ok := idxMap[each.BoardID]
+			if !ok {
+				continue
+			}
+			listIdx, ok := eachIdxMap[each.ArticleID]
+			if !ok {
+				continue
+			}
+
+			eachInTheList := theList[listIdx]
+			eachPostNanoTS := eachInTheList.CreateTime
+			isRead := each.UpdateNanoTS > eachPostNanoTS
+			eachUserReadArticleMap[each.ArticleID] = isRead
+		}
+
+		userReadArticleMap[boardID] = eachUserReadArticleMap
+
 	}
 
 	return userReadArticleMap, nil
 }
 
-func NewLoadUserArticlesResult(a_db []*schema.ArticleSummary, userReadArticleMap map[bbs.ArticleID]bool, nextIdx string) *LoadUserArticlesResult {
+func NewLoadUserArticlesResult(a_db []*schema.ArticleSummary, userReadArticleMap map[bbs.BBoardID]map[bbs.ArticleID]bool, nextIdx string) *LoadUserArticlesResult {
 	theList := make([]*apitypes.ArticleSummary, len(a_db))
 	for i, each_db := range a_db {
 		theList[i] = apitypes.NewArticleSummary(each_db)
-		articleID := each_db.ArticleID
-		isRead, ok := userReadArticleMap[articleID]
+		userReadArticleMapByBoardID, ok := userReadArticleMap[each_db.BBoardID]
+		if !ok {
+			continue
+		}
+		isRead, ok := userReadArticleMapByBoardID[each_db.ArticleID]
 		if ok && isRead {
 			theList[i].Read = true
 		}

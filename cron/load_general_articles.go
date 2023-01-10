@@ -119,11 +119,35 @@ func loadGeneralArticlesCore(boardID bbs.BBoardID, startIdx int32) (articleSumma
 		posts = posts[:N_ARTICLES]
 	}
 
-	// update to db
+	// deserialize
 	updateNanoTS := types.NowNanoTS()
-	articleSummaries, err = api.DeserializePBArticlesAndUpdateDB(boardID, posts, updateNanoTS, false)
+	articleSummaries, err = api.DeserializePBArticles(boardID, posts, updateNanoTS, false)
 	if err != nil {
 		return nil, INVALID_LOAD_GENERAL_ARTICLES_NEXT_IDX, err
+	}
+
+	// articleIDs
+	articleIDs := make([]bbs.ArticleID, len(articleSummaries))
+	for idx, each := range articleSummaries {
+		articleIDs[idx] = each.ArticleID
+	}
+
+	// origArticleSummaries
+	origArticleSummaries, err := schema.GetArticleSummariesByArticleIDs(boardID, articleIDs)
+	if err != nil {
+		return nil, INVALID_LOAD_GENERAL_ARTICLES_NEXT_IDX, err
+	}
+
+	articleSummaries, _, err = compareArticleSummaries(articleSummaries, origArticleSummaries)
+	if err != nil {
+		return nil, INVALID_LOAD_GENERAL_ARTICLES_NEXT_IDX, err
+	}
+
+	if len(articleSummaries) > 0 {
+		err = schema.UpdateArticleSummaryWithRegexes(articleSummaries, updateNanoTS)
+		if err != nil {
+			return nil, INVALID_LOAD_GENERAL_ARTICLES_NEXT_IDX, err
+		}
 	}
 
 	return articleSummaries, nextIdx, nil
@@ -145,16 +169,91 @@ func loadBottomArticles(boardID bbs.BBoardID) (err error) {
 		return err
 	}
 
-	err = schema.ResetArticleIsBottom(boardID)
+	updateNanoTS := types.NowNanoTS()
+	articleSummaries, err := api.DeserializePBArticles(boardID, resp.Bottoms, updateNanoTS, false)
 	if err != nil {
 		return err
 	}
 
-	updateNanoTS := types.NowNanoTS()
-	_, err = api.DeserializePBArticlesAndUpdateDB(boardID, resp.Bottoms, updateNanoTS, true)
+	// origArticleSummaries
+	origArticleSummaries, err := schema.GetBottomArticleSummaries(boardID)
 	if err != nil {
 		return err
+	}
+
+	articleSummaries, toRemoveArticleIDs, err := compareArticleSummaries(articleSummaries, origArticleSummaries)
+	if err != nil {
+		return err
+	}
+
+	if len(toRemoveArticleIDs) > 0 {
+		err = schema.ResetArticleIsBottom(boardID, toRemoveArticleIDs)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(articleSummaries) > 0 {
+		err = schema.UpdateArticleSummaryWithRegexes(articleSummaries, updateNanoTS)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func compareArticleSummaries(articleSummaries []*schema.ArticleSummaryWithRegex, origArticleSummaries []*schema.ArticleSummary) (newArticleSummaries []*schema.ArticleSummaryWithRegex, toRemoveArticleIDs []bbs.ArticleID, err error) {
+	origArticleSummaryMap := make(map[bbs.ArticleID]*schema.ArticleSummary)
+	for _, each := range origArticleSummaries {
+		origArticleSummaryMap[each.ArticleID] = each
+	}
+
+	newArticleSummaries = make([]*schema.ArticleSummaryWithRegex, 0, len(articleSummaries))
+	for _, each := range articleSummaries {
+		eachOrig, ok := origArticleSummaryMap[each.ArticleID]
+		if !ok {
+			newArticleSummaries = append(newArticleSummaries, each)
+			continue
+		}
+		if each.IsDeleted != eachOrig.IsDeleted {
+			newArticleSummaries = append(newArticleSummaries, each)
+			continue
+		}
+		if each.MTime != eachOrig.MTime {
+			newArticleSummaries = append(newArticleSummaries, each)
+			continue
+		}
+		if each.Recommend != eachOrig.Recommend {
+			newArticleSummaries = append(newArticleSummaries, each)
+			continue
+		}
+		if each.FullTitle != eachOrig.FullTitle {
+			newArticleSummaries = append(newArticleSummaries, each)
+			continue
+		}
+		if each.Filemode != eachOrig.Filemode {
+			newArticleSummaries = append(newArticleSummaries, each)
+			continue
+		}
+		if each.IsBottom != eachOrig.IsBottom {
+			newArticleSummaries = append(newArticleSummaries, each)
+			continue
+		}
+	}
+
+	articleSummarySet := make(map[bbs.ArticleID]bool)
+	for _, each := range articleSummaries {
+		articleSummarySet[each.ArticleID] = true
+	}
+
+	toRemoveArticleIDs = make([]bbs.ArticleID, 0, len(origArticleSummaries))
+	for _, each := range origArticleSummaries {
+		_, ok := articleSummarySet[each.ArticleID]
+		if !ok {
+			toRemoveArticleIDs = append(toRemoveArticleIDs, each.ArticleID)
+		}
+	}
+
+	return newArticleSummaries, toRemoveArticleIDs, nil
 }

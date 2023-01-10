@@ -64,8 +64,9 @@ func GetArticleSummary(bboardID bbs.BBoardID, articleID bbs.ArticleID) (result *
 	return result, nil
 }
 
-func GetArticleSummariesByArticleIDs(articleIDs []bbs.ArticleID) (result []*ArticleSummary, err error) {
+func GetArticleSummariesByArticleIDs(bboardID bbs.BBoardID, articleIDs []bbs.ArticleID) (result []*ArticleSummary, err error) {
 	query := bson.M{
+		ARTICLE_BBOARD_ID_b: bboardID,
 		ARTICLE_ARTICLE_ID_b: bson.M{
 			"$in": articleIDs,
 		},

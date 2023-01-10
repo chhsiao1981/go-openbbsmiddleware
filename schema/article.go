@@ -168,9 +168,12 @@ type ArticleQuery struct {
 
 var EMPTY_ARTICLE_QUERY = &ArticleQuery{}
 
-func ResetArticleIsBottom(boardID bbs.BBoardID) (err error) {
+func ResetArticleIsBottom(boardID bbs.BBoardID, articleIDs []bbs.ArticleID) (err error) {
 	query := bson.M{
 		ARTICLE_BBOARD_ID_b: boardID,
+		ARTICLE_ARTICLE_ID_b: bson.M{
+			"$in": articleIDs,
+		},
 		ARTICLE_IS_BOTTOM_b: true,
 	}
 	update := bson.M{

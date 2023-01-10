@@ -128,39 +128,45 @@ func isValidCommentSummaries(commentSummaries_db []*schema.CommentSummary) ([]*s
 	return commentSummaries_db, nil
 }
 
-func getArticleMapFromCommentSummaries(userID bbs.UUserID, commentSummaries_db []*schema.CommentSummary) (articleSummaryMap map[bbs.ArticleID]*schema.ArticleSummary, userReadArticleMap map[bbs.ArticleID]types.NanoTS, err error) {
-	articleIDs := make([]bbs.ArticleID, 0, len(commentSummaries_db))
-	articleIDMap := make(map[bbs.ArticleID]bool)
+func getArticleMapFromCommentSummaries(userID bbs.UUserID, commentSummaries_db []*schema.CommentSummary) (articleSummaryMap map[bbs.BBoardID]map[bbs.ArticleID]*schema.ArticleSummary, userReadArticleMap map[bbs.BBoardID]map[bbs.ArticleID]types.NanoTS, err error) {
+	articleIDMap := make(map[bbs.BBoardID][]bbs.ArticleID)
 	for _, each := range commentSummaries_db {
-		_, ok := articleIDMap[each.ArticleID]
-		if ok {
-			continue
+		_, ok := articleIDMap[each.BBoardID]
+		if !ok {
+			articleIDMap[each.BBoardID] = make([]bbs.ArticleID, 0, len(commentSummaries_db))
 		}
 
-		articleIDMap[each.ArticleID] = true
-		articleIDs = append(articleIDs, each.ArticleID)
+		articleIDMap[each.BBoardID] = append(articleIDMap[each.BBoardID], each.ArticleID)
 	}
 
-	// article summaries
-	articleSummaries, err := schema.GetArticleSummariesByArticleIDs(articleIDs)
-	if err != nil {
-		return nil, nil, err
+	// article summary map
+
+	articleSummaryMap = make(map[bbs.BBoardID]map[bbs.ArticleID]*schema.ArticleSummary)
+	var articleSummaries []*schema.ArticleSummary
+	for boardID, articleIDs := range articleIDMap {
+		articleSummaries, err = schema.GetArticleSummariesByArticleIDs(boardID, articleIDs)
+		if err != nil {
+			continue
+		}
+		eachArticleSummaryMap := make(map[bbs.ArticleID]*schema.ArticleSummary)
+		for _, each := range articleSummaries {
+			eachArticleSummaryMap[each.ArticleID] = each
+		}
+		articleSummaryMap[boardID] = eachArticleSummaryMap
 	}
 
-	articleSummaryMap = make(map[bbs.ArticleID]*schema.ArticleSummary)
-	for _, each := range articleSummaries {
-		articleSummaryMap[each.ArticleID] = each
-	}
-
-	// user read articles
-	userReadArticles, err := schema.FindUserReadArticlesByArticleIDs(userID, articleIDs)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	userReadArticleMap = make(map[bbs.ArticleID]types.NanoTS)
-	for _, each := range userReadArticles {
-		userReadArticleMap[each.ArticleID] = each.UpdateNanoTS
+	// user read article map
+	userReadArticleMap = make(map[bbs.BBoardID]map[bbs.ArticleID]types.NanoTS)
+	for boardID, articleIDs := range articleIDMap {
+		userReadArticles, err := schema.FindUserReadArticlesByArticleIDs(userID, boardID, articleIDs)
+		if err != nil {
+			continue
+		}
+		eachUserReadArticleMap := make(map[bbs.ArticleID]types.NanoTS)
+		for _, each := range userReadArticles {
+			eachUserReadArticleMap[each.ArticleID] = each.UpdateNanoTS
+		}
+		userReadArticleMap[boardID] = eachUserReadArticleMap
 	}
 
 	return articleSummaryMap, userReadArticleMap, nil
@@ -168,19 +174,28 @@ func getArticleMapFromCommentSummaries(userID bbs.UUserID, commentSummaries_db [
 
 func NewLoadUserCommentsResult(
 	commentSummaries_db []*schema.CommentSummary,
-	articleSummaryMap map[bbs.ArticleID]*schema.ArticleSummary,
-	userReadArticleMap map[bbs.ArticleID]types.NanoTS,
-	nextIdx string) (result *LoadUserCommentsResult) {
+	articleSummaryMap map[bbs.BBoardID]map[bbs.ArticleID]*schema.ArticleSummary,
+	userReadArticleMap map[bbs.BBoardID]map[bbs.ArticleID]types.NanoTS,
+	nextIdx string,
+) (result *LoadUserCommentsResult) {
 	comments := make([]*apitypes.ArticleComment, len(commentSummaries_db))
 	for idx, each := range commentSummaries_db {
-		articleSummary, ok := articleSummaryMap[each.ArticleID]
+		articleSummaryMapByBoardID, ok := articleSummaryMap[each.BBoardID]
+		if !ok {
+			continue
+		}
+		articleSummary, ok := articleSummaryMapByBoardID[each.ArticleID]
 		if !ok {
 			continue
 		}
 		comments[idx] = apitypes.NewArticleCommentFromComment(articleSummary, each)
 
 		// read
-		readNanoTS, ok := userReadArticleMap[each.ArticleID]
+		userReadArticleMapByBoardID, ok := userReadArticleMap[each.BBoardID]
+		if !ok {
+			continue
+		}
+		readNanoTS, ok := userReadArticleMapByBoardID[each.ArticleID]
 		if !ok {
 			continue
 		}

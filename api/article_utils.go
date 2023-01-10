@@ -27,8 +27,8 @@ func UpdateArticleContentInfo(
 	bbs string,
 	signatureMD5 string,
 	signatureDBCS []byte,
-	updateNanoTS types.NanoTS) (err error) {
-
+	updateNanoTS types.NanoTS,
+) (err error) {
 	if contentMD5 == "" {
 		return nil
 	}
@@ -114,17 +114,29 @@ func deserializeArticlesAndUpdateDB(userID bbs.UUserID, bboardID bbs.BBoardID, a
 }
 
 func DeserializePBArticlesAndUpdateDB(boardID bbs.BBoardID, articleSummaries_b []*boardd.Post, updateNanoTS types.NanoTS, isBottom bool) (articleSummaries []*schema.ArticleSummaryWithRegex, err error) {
+	articleSummaries, err = DeserializePBArticles(boardID, articleSummaries_b, updateNanoTS, isBottom)
+	if err != nil {
+		return nil, err
+	}
+	if len(articleSummaries) == 0 {
+		return nil, nil
+	}
+
+	err = schema.UpdateArticleSummaryWithRegexes(articleSummaries, updateNanoTS)
+	if err != nil {
+		return nil, err
+	}
+
+	return articleSummaries, nil
+}
+
+func DeserializePBArticles(boardID bbs.BBoardID, articleSummaries_b []*boardd.Post, updateNanoTS types.NanoTS, isBottom bool) (articleSummaries []*schema.ArticleSummaryWithRegex, err error) {
 	if len(articleSummaries_b) == 0 {
 		return nil, nil
 	}
 	articleSummaries = make([]*schema.ArticleSummaryWithRegex, len(articleSummaries_b))
 	for idx, each_b := range articleSummaries_b {
 		articleSummaries[idx] = schema.NewArticleSummaryWithRegexFromPBArticle(boardID, each_b, updateNanoTS, isBottom)
-	}
-
-	err = schema.UpdateArticleSummaryWithRegexes(articleSummaries, updateNanoTS)
-	if err != nil {
-		return nil, err
 	}
 
 	return articleSummaries, nil

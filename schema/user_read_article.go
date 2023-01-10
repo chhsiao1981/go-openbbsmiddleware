@@ -138,10 +138,11 @@ func FindUserReadArticles(userID bbs.UUserID, boardID bbs.BBoardID, articleIDs [
 	return dbResults, nil
 }
 
-func FindUserReadArticlesByArticleIDs(userID bbs.UUserID, articleIDs []bbs.ArticleID) ([]*UserReadArticle, error) {
+func FindUserReadArticlesByArticleIDs(userID bbs.UUserID, boardID bbs.BBoardID, articleIDs []bbs.ArticleID) ([]*UserReadArticle, error) {
 	// query
 	query := bson.M{
-		USER_READ_ARTICLE_USER_ID_b: userID,
+		USER_READ_ARTICLE_USER_ID_b:  userID,
+		USER_READ_ARTICLE_BOARD_ID_b: boardID,
 		USER_READ_ARTICLE_ARTICLE_ID_b: bson.M{
 			"$in": articleIDs,
 		},
