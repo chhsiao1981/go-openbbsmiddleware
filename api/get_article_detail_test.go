@@ -74,7 +74,7 @@ func TestGetArticleDetail(t *testing.T) {
 	expectedArticleDetailSummary0 := &schema.ArticleDetailSummary{
 		BBoardID:   bbs.BBoardID("10_WhoAmI"),
 		ArticleID:  bbs.ArticleID("1VtWRel9"),
-		ContentMD5: "MpnMgVtdAhQnf1f9wIH9EA",
+		ContentMD5: "L6QISYJFt-Y5g4Thl-roaw",
 		// ContentMTime:          types.NanoTS(1608386280000000000),
 		FirstCommentsLastTime: types.NanoTS(0),
 
@@ -95,7 +95,7 @@ func TestGetArticleDetail(t *testing.T) {
 	expectedArticleDetailSummary02 := &schema.ArticleDetailSummary{
 		BBoardID:   bbs.BBoardID("10_WhoAmI"),
 		ArticleID:  bbs.ArticleID("1VtWRel9"),
-		ContentMD5: "MpnMgVtdAhQnf1f9wIH9EA",
+		ContentMD5: "L6QISYJFt-Y5g4Thl-roaw",
 		// ContentMTime:          types.NanoTS(1608386300000000000),
 		FirstCommentsLastTime: types.NanoTS(0),
 
@@ -115,55 +115,55 @@ func TestGetArticleDetail(t *testing.T) {
 
 	path1 := &GetArticleDetailPath{
 		FBoardID:   apitypes.FBoardID("WhoAmI"),
-		FArticleID: apitypes.FArticleID("M.1607937174.A.081"),
+		FArticleID: apitypes.FArticleID("M.1608388506.A.85D"),
 	}
 
 	expectedResult1 := &GetArticleDetailResult{
 		BBoardID:   apitypes.FBoardID("WhoAmI"),
-		ArticleID:  apitypes.FArticleID("M.1607937174.A.081"),
-		Owner:      bbs.UUserID("teemo"),
-		CreateTime: types.Time8(1607937174),
-		MTime:      types.Time8(1607937100),
+		ArticleID:  apitypes.FArticleID("M.1608388506.A.85D"),
+		Owner:      bbs.UUserID("SYSOP"),
+		CreateTime: types.Time8(1608388506),
+		MTime:      types.Time8(1608386280),
 
-		URL:  "http://localhost:3457/bbs/board/WhoAmI/article/M.1607937174.A.081",
+		URL:  "http://localhost:3457/bbs/board/WhoAmI/article/M.1608388506.A.85D",
 		Read: true,
 
-		Title:         "新書的情報",
+		Title:         "所以特殊字真的是有綠色的∼",
 		Money:         0,
-		Recommend:     3,
+		Recommend:     9,
 		Class:         "閒聊",
 		Brdname:       "WhoAmI",
-		Content:       testUtf8Content5Utf8[4:],
-		ContentPrefix: testUtf8Content5Utf8[:4],
-		IP:            "123.193.200.197",
-		Host:          "臺灣",
-		BBS:           "批踢踢實業坊(ptt.cc)",
-		NComments:     1,
+		Content:       testContent4Utf8[4:],
+		ContentPrefix: testContent4Utf8[:4],
+		IP:            "172.22.0.1",
+		Host:          "",
+		BBS:           "批踢踢 docker(pttdocker.test)",
+		NComments:     3,
 	}
 
 	expectedArticleDetailSummary1 := &schema.ArticleDetailSummary{
 		BBoardID:  bbs.BBoardID("10_WhoAmI"),
-		ArticleID: bbs.ArticleID("1VrooM21"),
+		ArticleID: bbs.ArticleID("1VtW-QXT"),
 		// ContentMTime: types.NanoTS(1608388624000000000),
-		ContentMD5: "58yrYdHg3mX-I4WG3T4Ciw",
-		Owner:      "teemo",
+		ContentMD5: "riiRuKCZzG0gAGpQiq4GJA",
+		Owner:      "SYSOP",
 
-		FirstCommentsMD5: "07DlIdfGCqTbohb5L4Nf1w",
+		FirstCommentsMD5: "3fjMk__1yvzpuEgq8jfdmg",
 		NComments:        0,
 
-		CreateTime: types.NanoTS(1607937174000000000),
-		MTime:      types.NanoTS(1607937100000000000),
+		CreateTime: types.NanoTS(1608388506000000000),
+		MTime:      types.NanoTS(1608386280000000000),
 
-		Title:     "新書的情報",
+		Title:     "所以特殊字真的是有綠色的∼",
 		Money:     0,
-		Recommend: 3,
+		Recommend: 9,
 		Class:     "閒聊",
 
-		Host: "臺灣",
-		IP:   "123.193.200.197",
-		BBS:  "批踢踢實業坊(ptt.cc)",
+		Host: "",
+		IP:   "172.22.0.1",
+		BBS:  "批踢踢 docker(pttdocker.test)",
 
-		Idx: "1607937174@1VrooM21",
+		Idx: "1608388506@1VtW-QXT",
 	}
 	c := &gin.Context{}
 	// c.Request = &http.Request{URL: &url.URL{Path: "/api/boards/WhoAmI/article/M.1607937174.A.081"}}
@@ -234,25 +234,9 @@ func TestGetArticleDetail(t *testing.T) {
 			expectedStatusCode:           200,
 			toSoonNanoTS:                 1,
 		},
-		{
-			name: "0th-081",
-			args: args{
-				remoteAddr: "localhost",
-				userID:     "chhsiao123",
-				params:     params,
-				path:       path1,
-				c:          c,
-				boardID:    "10_WhoAmI",
-				articleID:  "1VrooM21",
-			},
-			expectedFirstComments:        testUtf8FullFirstComments5,
-			expectedResult:               expectedResult1,
-			expectedStatusCode:           200,
-			expectedArticleDetailSummary: expectedArticleDetailSummary1,
-		},
 		/*
 			{
-				name: "1st-1VrooM21SYSOP",
+				name: "0th-081",
 				args: args{
 					remoteAddr: "localhost",
 					userID:     "chhsiao123",
@@ -260,14 +244,30 @@ func TestGetArticleDetail(t *testing.T) {
 					path:       path1,
 					c:          c,
 					boardID:    "10_WhoAmI",
-					articleID:  "1VrooM21SYSOP",
+					articleID:  "1VrooM21",
 				},
-				expectedFirstComments:        testFirstComments4,
+				expectedFirstComments:        testUtf8FullFirstComments5,
 				expectedResult:               expectedResult1,
 				expectedStatusCode:           200,
 				expectedArticleDetailSummary: expectedArticleDetailSummary1,
 			},
 		*/
+		{
+			name: "1st-1VtW-QXT",
+			args: args{
+				remoteAddr: "localhost",
+				userID:     "chhsiao123",
+				params:     params,
+				path:       path1,
+				c:          c,
+				boardID:    "10_WhoAmI",
+				articleID:  "1VtW-QXT",
+			},
+			expectedResult:               expectedResult1,
+			expectedStatusCode:           200,
+			expectedArticleDetailSummary: expectedArticleDetailSummary1,
+			expectedFirstComments:        testFullFirstComments4,
+		},
 	}
 
 	var wg sync.WaitGroup

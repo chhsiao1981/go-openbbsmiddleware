@@ -17,8 +17,8 @@ func UpdateManArticleContentInfo(
 	articleID types.ManArticleID,
 	content [][]*types.Rune,
 	contentMD5 string,
-	updateNanoTS types.NanoTS) (err error) {
-
+	updateNanoTS types.NanoTS,
+) (err error) {
 	if contentMD5 == "" {
 		return nil
 	}
