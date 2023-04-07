@@ -24,12 +24,11 @@ func tryGetUserFavorites(
 	ascending bool,
 	limit int,
 	c *gin.Context) (
-
 	userFavorites []*schema.UserFavorites,
 	nextIdxStr string,
 	statusCode int,
-	err error) {
-
+	err error,
+) {
 	startIdx := 0
 	if len(startIdxStr) > 0 {
 		startIdx, err = strconv.Atoi(startIdxStr)
@@ -91,6 +90,22 @@ func tryGetUserFavorites(
 	}
 
 	return userFavorites, nextIdxStr, 200, nil
+}
+
+func getAllUserFavoritesFromDB(userID bbs.UUserID) (userFavoritesMeta *schema.UserFavoritesMeta, userFavorites []*schema.UserFavorites, err error) {
+	// user-favorites-meta
+	userFavoritesMeta, err = schema.GetUserFavoritesMeta(userID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// get db
+	userFavorites, err = schema.GetAllUserFavorites(userID, userFavoritesMeta.DoubleBufferIdx, userFavoritesMeta.MTime)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return userFavoritesMeta, userFavorites, nil
 }
 
 func deserializeUserFavoritesAndUpdateDB(userID bbs.UUserID, mTime types.NanoTS, contentWithVersion []byte, updateNanoTS types.NanoTS, doubleBufferIdx int) (err error) {
