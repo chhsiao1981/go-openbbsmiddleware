@@ -183,3 +183,34 @@ func bidsInUserFavorites(userFavorites []*schema.UserFavorites) (bids []ptttype.
 
 	return bids
 }
+
+func tryWriteFav(theFav *fav.Fav, remoteAddr string, userID bbs.UUserID, c *gin.Context) (statusCode int, err error) {
+	theBytes := make([]byte, 0, MAX_USER_FAVORITES_BUF_SIZE)
+
+	buf := bytes.NewBuffer(theBytes)
+
+	err = theFav.WriteFavrec(buf)
+	if err != nil {
+		return 500, err
+	}
+
+	content := buf.Bytes()
+
+	// backend get user-favorites
+	theParams_b := &pttbbsapi.WriteFavoritesParams{
+		Content: content,
+	}
+	var result_b *pttbbsapi.WriteFavoritesResult
+
+	urlMap := map[string]string{
+		"uid": string(userID),
+	}
+	url := utils.MergeURL(urlMap, pttbbsapi.WRITE_FAV_R)
+
+	statusCode, err = utils.BackendGet(c, url, theParams_b, nil, &result_b)
+	if err != nil {
+		return statusCode, err
+	}
+
+	return 200, nil
+}

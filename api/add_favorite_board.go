@@ -6,7 +6,6 @@ import (
 	"github.com/Ptt-official-app/go-openbbsmiddleware/apitypes"
 	"github.com/Ptt-official-app/go-openbbsmiddleware/schema"
 	"github.com/Ptt-official-app/go-pttbbs/bbs"
-	pttbbsfav "github.com/Ptt-official-app/go-pttbbs/ptt/fav"
 	"github.com/Ptt-official-app/go-pttbbs/ptttype"
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +13,6 @@ import (
 const ADD_FAVORITE_BOARD_R = "/user/:user_id/favorites/add"
 
 type AddFavoriteBoardParams struct {
-	LevelIdx schema.LevelIdx   `json:"level_idx,omitempty" form:"level_idx,omitempty" url:"level_idx,omitempty"`
 	FBoardID apitypes.FBoardID `json:"bid" form:"bid" url:"bid"`
 }
 
@@ -67,28 +65,25 @@ func AddFavoriteBoard(remoteAddr string, userID bbs.UUserID, params interface{},
 		return nil, 500, err
 	}
 
-	newUserFavorite := &schema.UserFavorites{
-		UserID:   userID,
-		FavIdx:   0,
-		LevelIdx: theParams.LevelIdx,
-		Idx:      0,
-		TheType:  pttbbsfav.FAVT_BOARD,
-		Attr:     pttbbsfav.FAVH_FAV,
-		TheID:    int(bid),
-	}
-
-	userFavorites = insertNewUserFavorite(userFavorites, newUserFavorite)
-
-	theFav, _ := schema.UserFavoritesToFav(&userFavoritesMeta.FolderMeta, userFavorites, 0)
-
-	err := tryWriteFav(boardID, theFav, remoteAddr, userID, c)
+	theFav, err := schema.UserFavoritesToFav(&userFavoritesMeta.FolderMeta, userFavorites, 0)
 	if err != nil {
 		return nil, 500, err
 	}
 
-	startIdxStr := strconv.Itoa(newUserFavorite.Idx)
+	_, err = theFav.AddBoard(bid)
+	if err != nil {
+		return nil, 500, err
+	}
 
-	newUserFavorites, _, statusCode, err := tryGetUserFavorites(userID, theParams.LevelIdx, startIdxStr, true, 1, c)
+	startIdx := len(theFav.Favh) - 1
+	startIdxStr := strconv.Itoa(startIdx)
+
+	statusCode, err = tryWriteFav(theFav, remoteAddr, userID, c)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
+	newUserFavorites, _, statusCode, err := tryGetUserFavorites(userID, "", startIdxStr, true, 1, c)
 	if err != nil {
 		return nil, statusCode, err
 	}
@@ -129,4 +124,23 @@ func AddFavoriteBoard(remoteAddr string, userID bbs.UUserID, params interface{},
 	}
 
 	return ret, 200, nil
+}
+
+func insertNewUserFavorite(userFavorites []*schema.UserFavorites, newUserFavorite *schema.UserFavorites) (newUserFavorites []*schema.UserFavorites) {
+	toAddIdx := len(userFavorites)
+	for idx, each := range userFavorites {
+		if each.LevelIdx != "" {
+			toAddIdx = idx
+			break
+		}
+	}
+
+	newUserFavorites = append(newUserFavorites, userFavorites[:toAddIdx]...)
+	newUserFavorites = append(newUserFavorites, newUserFavorite)
+	newUserFavorites = append(newUserFavorites, userFavorites[toAddIdx:]...)
+	for idx, each := range newUserFavorites {
+		each.FavIdx = idx
+	}
+
+	return newUserFavorites
 }
