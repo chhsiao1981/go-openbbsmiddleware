@@ -14,6 +14,7 @@ import (
 	pttbbsfav "github.com/Ptt-official-app/go-pttbbs/ptt/fav"
 	"github.com/Ptt-official-app/go-pttbbs/ptttype"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -98,6 +99,14 @@ func getAllUserFavoritesFromDB(userID bbs.UUserID) (userFavoritesMeta *schema.Us
 	if err != nil {
 		return nil, nil, err
 	}
+	if userFavoritesMeta == nil {
+		userFavoritesMeta = &schema.UserFavoritesMeta{
+			UserID: userID,
+		}
+		return userFavoritesMeta, []*schema.UserFavorites{}, nil
+	}
+
+	logrus.Infof("getAllUserFavoritesFromDB: userFavoritesMeta: %v", userFavoritesMeta)
 
 	// get db
 	userFavorites, err = schema.GetAllUserFavorites(userID, userFavoritesMeta.DoubleBufferIdx, userFavoritesMeta.MTime)

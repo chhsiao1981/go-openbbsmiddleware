@@ -107,7 +107,7 @@ func AddFavoriteBoard(remoteAddr string, userID bbs.UUserID, params interface{},
 		return nil, 500, err
 	}
 
-	newUserFavorite = newUserFavorites[0]
+	newUserFavorite := newUserFavorites[0]
 	boardSummary_db, ok := boardSummaryMap_db[ptttype.Bid(newUserFavorite.TheID)]
 	if !ok {
 		return nil, 500, ErrInvalidFav
@@ -124,23 +124,4 @@ func AddFavoriteBoard(remoteAddr string, userID bbs.UUserID, params interface{},
 	}
 
 	return ret, 200, nil
-}
-
-func insertNewUserFavorite(userFavorites []*schema.UserFavorites, newUserFavorite *schema.UserFavorites) (newUserFavorites []*schema.UserFavorites) {
-	toAddIdx := len(userFavorites)
-	for idx, each := range userFavorites {
-		if each.LevelIdx != "" {
-			toAddIdx = idx
-			break
-		}
-	}
-
-	newUserFavorites = append(newUserFavorites, userFavorites[:toAddIdx]...)
-	newUserFavorites = append(newUserFavorites, newUserFavorite)
-	newUserFavorites = append(newUserFavorites, userFavorites[toAddIdx:]...)
-	for idx, each := range newUserFavorites {
-		each.FavIdx = idx
-	}
-
-	return newUserFavorites
 }
