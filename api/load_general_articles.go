@@ -81,6 +81,12 @@ func LoadGeneralArticles(remoteAddr string, userID bbs.UUserID, params interface
 		return nil, 500, err
 	}
 
+	userEditableArticleMap := make(map[bbs.ArticleID]bool)
+	userEditableArticleMap, err = checkEditableArticles(userID, boardID, userEditableArticleMap, articleSummaries_db)
+	if err != nil {
+		return nil, 500, err
+	}
+
 	r := NewLoadGeneralArticlesResult(articleSummaries_db, userReadArticleMap, nextIdx, userID)
 
 	// update user_read_board if is-newest
